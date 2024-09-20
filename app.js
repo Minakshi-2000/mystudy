@@ -1,58 +1,65 @@
-// Variables for DOM elements
-const taskInput = document.getElementById('new-task');
-const addTaskBtn = document.getElementById('add-task-btn');
-const taskList = document.getElementById('task-list');
+// Get elements from the DOM
+const taskInput = document.getElementById('taskInput');
+const addTaskButton = document.getElementById('addTaskButton');
+const taskList = document.getElementById('taskList');
 
-// Load tasks from localStorage
-let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+// Function to add a new task
+function addTask() {
+    const taskText = taskInput.value.trim();
+    
+    if (taskText === "") {
+        alert("Please enter a task!");
+        return;
+    }
 
-// Function to render tasks on the page
-function renderTasks() {
-    taskList.innerHTML = '';
+    // Create new task item
+    const taskItem = document.createElement('li');
+    taskItem.classList.add('task-item');
+    
+    // Add task content
+    taskItem.innerHTML = `
+        <span class="task-text">${taskText}</span>
+        <button class="edit-btn" onclick="editTask(this)">Edit</button>
+        <button class="delete-btn" onclick="removeTask(this)">Delete</button>
+    `;
 
-    tasks.forEach((task, index) => {
-        const li = document.createElement('li');
-        li.innerHTML = `
-            <span class="task-name">${task}</span>
-            <button class="edit-btn" onclick="editTask(${index})">Edit</button>
-            <button class="delete-btn" onclick="deleteTask(${index})">Delete</button>
-        `;
-        taskList.appendChild(li);
-    });
+    // Append task to the task list
+    taskList.appendChild(taskItem);
+
+    // Clear the input
+    taskInput.value = "";
 }
 
-// Add a new task
-addTaskBtn.addEventListener('click', function() {
-    const newTask = taskInput.value.trim();
-    if (newTask) {
-        tasks.push(newTask);
-        updateLocalStorage();
-        renderTasks();
-        taskInput.value = ''; // Clear the input field
+// Function to remove a task
+function removeTask(button) {
+    const taskItem = button.parentElement;
+    taskItem.remove();
+}
+
+// Function to edit a task
+function editTask(button) {
+    const taskItem = button.parentElement;
+    const taskTextElement = taskItem.querySelector('.task-text');
+    
+    // Get the current task text
+    const currentText = taskTextElement.textContent;
+    
+    // Prompt user to enter new task text
+    const newText = prompt("Edit task:", currentText);
+    
+    if (newText === null || newText.trim() === "") {
+        alert("Task text cannot be empty!");
+    } else {
+        taskTextElement.textContent = newText.trim();
+    }
+}
+
+// Event listener for the "Add Task" button
+addTaskButton.addEventListener('click', addTask);
+
+// Add task when pressing Enter key
+taskInput.addEventListener('keydown', (event) => {
+    if (event.key === "Enter") {
+        addTask();
     }
 });
-
-// Delete a task
-function deleteTask(index) {
-    tasks.splice(index, 1);
-    updateLocalStorage();
-    renderTasks();
-}
-
-// Edit a task
-function editTask(index) {
-    const newTask = prompt('Edit your task:', tasks[index]);
-    if (newTask) {
-        tasks[index] = newTask.trim();
-        updateLocalStorage();
-        renderTasks();
-    }
-}
-
-// Update localStorage
-function updateLocalStorage() {
-    localStorage.setItem('tasks', JSON.stringify(tasks));
-}
-
-// Initial render of tasks when page loads
-renderTasks();
